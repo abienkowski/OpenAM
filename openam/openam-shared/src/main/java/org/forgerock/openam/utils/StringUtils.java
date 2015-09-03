@@ -1,6 +1,7 @@
 /**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
+ * Copyright (c) 2011-2015 ForgeRock AS. All Rights Reserved
  * Copyright (c) 2011-2014 ForgeRock AS. All Rights Reserved
  *
  * The contents of this file are subject to the terms
@@ -24,6 +25,7 @@
  */
 /*
  * Portions Copyrighted 2014 Nomura Research Institute, Ltd.
+ * Portions Copyrighted 2015 ForgeRock AS.
  */
 
 package org.forgerock.openam.utils;
@@ -36,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for handling Strings
@@ -182,5 +185,103 @@ public final class StringUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Compare two strings for equality.
+     * @param s1 first string to compare.
+     * @param s2 second string to compare.
+     * @return true if strings are equal or they are both null.
+     */
+    public static boolean isEqualTo(String s1, String s2) {
+        return CollectionUtils.genericCompare(s1, s2);
+    }
+
+    /**
+     * Compares two strings in a case insensitive manner, that also allows for
+     * either of the strings to be null, without issue.
+     *
+     * @param s1 the first string to be compared.
+     * @param s2 the second string to tbe compared.
+     * @return true if the parameter values are the same, false if different.
+     */
+    public static boolean compareCaseInsensitiveString(String s1, String s2) {
+        return s1 == null ? s2 == null : s1.equalsIgnoreCase(s2);
+    }
+
+    /**
+     * Check if one string contains another string.
+     * @param s1 The string to check in.
+     * @param s2 The string to check for.
+     * @return False if either string is null or if the first does not contain the second, otherwise true.
+     */
+    public static boolean contains(String s1, String s2) {
+        if (s1 == null || s2 == null) {
+            return false;
+        }
+        return s1.contains(s2);
+    }
+
+    /**
+     * Check if one string contains another string in a case insensitive manner.
+     * @param s1 The string to check in.
+     * @param s2 The string to check for.
+     * @return False if either string is null or if the first does not contain the second, otherwise true.
+     */
+    public static boolean containsCaseInsensitive(String s1, String s2) {
+        if (s1 == null || s2 == null) {
+            return false;
+        }
+        return s1.toLowerCase().contains(s2.toLowerCase());
+    }
+
+    /**
+     * Check if one string starts with another string.
+     * @param s1 The string to check in.
+     * @param s2 The string to check for.
+     * @return False if either string is null or if the first does not start with the second, otherwise true.
+     */
+    public static boolean startsWith(String s1, String s2) {
+        if (s1 == null || s2 == null) {
+            return false;
+        }
+        return s1.startsWith(s2);
+    }
+
+    /**
+     * Match the value to the regular expression pattern. The pattern given can contain a file name like search,
+     * e.g. '*service*', which will be converted to a valid regular expression, e.g. '.*?service.*'.
+     * @param value The value to match on.
+     * @param strPattern The pattern to match.
+     * @return True if the value matches the pattern, false otherwise.
+     */
+    public static boolean match(String value, String strPattern) {
+        if (isNotEmpty(strPattern)) {
+            if (isBlank(value)) {
+                return strPattern.equals("*");
+            }
+            value = value.toLowerCase();
+            strPattern = strPattern.toLowerCase();
+            StringBuilder buff = new StringBuilder();
+
+            for (int i = 0; i < strPattern.length() - 1; i++) {
+                char c = strPattern.charAt(i);
+                if (c == '*') {
+                    buff.append(".*?");
+                } else {
+                    buff.append(c);
+                }
+            }
+
+            char lastChar = strPattern.charAt(strPattern.length()-1);
+            if (lastChar == '*') {
+                buff.append(".*");
+            } else {
+                buff.append(lastChar);
+            }
+            return Pattern.matches(buff.toString(), value);
+        }
+
+        return true;
     }
 }

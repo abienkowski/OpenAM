@@ -1,4 +1,4 @@
-/**
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2006 Sun Microsystems Inc. All Rights Reserved
@@ -24,9 +24,8 @@
  *
  * $Id: Constants.java,v 1.47 2009/08/12 23:10:44 ericow Exp $
  *
- * Portions Copyrighted 2010-2014 ForgeRock AS.
+ * Portions Copyrighted 2010-2015 ForgeRock AS.
  */
-
 package com.sun.identity.shared;
 
 /**
@@ -324,6 +323,24 @@ public interface Constants {
     static final String AM_SESSION_FAILOVER_CLUSTER_STATE_CHECK_PERIOD =
             "com.iplanet.am.session.failover.cluster.stateCheck.period";
 
+    static final String AM_SESSION_ENABLE_SESSION_CONSTRAINT =
+            "iplanet-am-session-enable-session-constraint";
+
+    static final String AM_SESSION_DENY_LOGIN_IF_DB_IS_DOWN =
+            "iplanet-am-session-deny-login-if-db-is-down";
+
+    static final String AM_SESSION_CONSTRAINT_HANDLER =
+            "iplanet-am-session-constraint-handler";
+
+    static final String AM_SESSION_SESSION_LIST_RETRIEVAL_TIMEOUT =
+            "iplanet-am-session-session-list-retrieval-timeout";
+
+    static final String AM_SESSION_MAX_SESSION_LIST_SIZE =
+            "iplanet-am-session-max-session-list-size";
+
+    static final String AM_SESSION_CONSTRAINT_MAX_WAIT_TIME =
+            "iplanet-am-session-constraint-max-wait-time";
+
     /**
      * Property string for max number of sessions
      */
@@ -487,7 +504,7 @@ public interface Constants {
 
     /**
      * Property string to determine if validation is required when parsing XML
-     * documents using OpenSSO XMLUtils class.
+     * documents using OpenAM XMLUtils class.
      */
     static final String XML_VALIDATING = "com.iplanet.am.util.xml.validating";
 
@@ -618,7 +635,7 @@ public interface Constants {
 
     /**
      * HTTP Form Parameter name used by PEP for posting policy advices to
-     * OpenSSO.
+     * OpenAM.
      */
     static final String COMPOSITE_ADVICE = "sunamcompositeadvice";
 
@@ -1317,4 +1334,30 @@ public interface Constants {
      */
     public static final String CORE_TOKEN_RESOURCE_ENABLED = "org.forgerock.openam.cts.rest.enabled";
 
+    /**
+     * Property to define the default time limit for LDAP operations performed by the Netscape LDAP SDK.
+     */
+    public static final String DEFAULT_LDAP_TIME_LIMIT = "org.forgerock.openam.ldap.default.time.limit";
+
+    /**
+     * Property that defines a comma separated list of classes that are valid during deserialisation of Java classes
+     * in OpenAM, for example, in the JATO framework
+     */
+    public static final String DESERIALISATION_CLASSES_WHITELIST = "openam.deserialisation.classes.whitelist";
+
+    /**
+     * Property used by the XML builder to retrieve a configuration specific name for an attribute schema.
+     */
+    public static final String CONFIGURATION_NAME = "configuration_name";
+
+    /**
+     * Heartbeat timeout in seconds of the HeartBeatConnectionFactory
+     * The heartbeat timeout after which a connection will be marked as failed
+     */
+    public static final String LDAP_HEARTBEAT_TIMEOUT = "org.forgerock.openam.ldap.heartbeat.timeout";
+
+    /**
+     * Property that defines whether XUI's Reverse Proxy support should be enabled or not.
+     */
+    public static final String XUI_REVERSE_PROXY_SUPPORT = "org.forgerock.openam.xui.reverseproxy.support";
 }

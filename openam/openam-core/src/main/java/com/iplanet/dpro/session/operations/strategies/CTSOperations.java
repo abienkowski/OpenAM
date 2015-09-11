@@ -27,8 +27,6 @@ import com.iplanet.dpro.session.utils.SessionInfoFactory;
 import com.sun.identity.shared.debug.Debug;
 import org.forgerock.openam.cts.CTSPersistentStore;
 import org.forgerock.openam.cts.adapters.SessionAdapter;
-import org.forgerock.openam.cts.api.fields.CoreTokenField;
-import org.forgerock.openam.cts.api.filter.TokenFilterBuilder;
 import org.forgerock.openam.cts.api.tokens.Token;
 import org.forgerock.openam.cts.api.tokens.TokenIdFactory;
 import org.forgerock.openam.cts.exceptions.CoreTokenException;
@@ -37,7 +35,6 @@ import org.forgerock.openam.cts.impl.query.PartialToken;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.Collection;
 
 /**
  * Responsible for providing an implementation of the Session Operations
@@ -179,28 +176,6 @@ public class CTSOperations implements SessionOperations {
             debug.error("Failed to read token: " + tokenID, e);
             throw new SessionException(e);
         }
-    }
-
-    /**
-     * Checks whether the CTS store contains the session.
-     * @param session The requested session.
-     * @return Whether the session is in the CTS store.
-     */
-    public boolean hasSession(Session session) throws SessionException {
-        String tokenId = idFactory.toSessionTokenId(session.getID());
-        boolean found = false;
-        try {
-            Collection<PartialToken> tokens = cts.attributeQuery(new TokenFilterBuilder()
-                    .returnAttribute(CoreTokenField.TOKEN_ID)
-                    .withAttribute(CoreTokenField.TOKEN_ID, tokenId)
-                    .build());
-            found = !tokens.isEmpty();
-        } catch (CoreTokenException e) {
-            if (debug.messageEnabled()) {
-                debug.message("Could not find token: " + tokenId, e);
-            }
-        }
-        return found;
     }
 
     private static class ReadFailedSessionException extends SessionException {

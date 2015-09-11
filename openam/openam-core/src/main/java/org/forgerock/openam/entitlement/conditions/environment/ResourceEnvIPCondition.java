@@ -15,7 +15,7 @@
  */
 /*
  * Portions Copyrighted 2012 Open Source Solution Technology Corporation
- * Portions Copyright 2011-2014 ForgeRock AS
+ * Portions Copyright 2011-2015 ForgeRock AS.
  */
 
 package org.forgerock.openam.entitlement.conditions.environment;
@@ -73,6 +73,7 @@ import static org.forgerock.openam.entitlement.conditions.environment.ConditionC
 import static org.forgerock.openam.entitlement.conditions.environment.ConditionConstants.REQUEST_AUTH_LEVEL;
 import static org.forgerock.openam.entitlement.conditions.environment.ConditionConstants.REQUEST_AUTH_SCHEMES;
 import static org.forgerock.openam.entitlement.conditions.environment.ConditionConstants.REQUEST_IP;
+import org.forgerock.openam.utils.CollectionUtils;
 import org.forgerock.openam.utils.StringUtils;
 import org.forgerock.openam.utils.ValidateIPaddress;
 import org.json.JSONArray;
@@ -122,7 +123,7 @@ public class ResourceEnvIPCondition extends EntitlementConditionAdaptor {
 
         boolean allowed = false;
         Map<String, Set<String>> advices = new HashMap<String, Set<String>>();
-        SSOToken token = (SSOToken) subject.getPrivateCredentials().iterator().next();
+        SSOToken token = (subject == null) ? null : (SSOToken) subject.getPrivateCredentials().iterator().next();
         try {
             EnvironmentCondition condition = matchEnvironment(env, token);
 
@@ -679,9 +680,9 @@ public class ResourceEnvIPCondition extends EntitlementConditionAdaptor {
                     "conditionAuthLevel= " + authLevel);
         }
         if ((authRealm == null) || authRealm.length() == 0) {
-            Set levels = AMAuthUtils.getAuthenticatedLevels(token);
+            Set levels = (token == null) ? null : AMAuthUtils.getAuthenticatedLevels(token);
             if (debug.messageEnabled()) {
-                debug.message(localDebugName + "levels from token= " + levels);
+                debug.message(localDebugName + "levels from token= " + ((levels == null) ? "NULL" : levels));
             }
             if ((levels != null) && (!levels.isEmpty())) {
                 for (final Object level1 : levels) {
@@ -691,10 +692,10 @@ public class ResourceEnvIPCondition extends EntitlementConditionAdaptor {
                 }
             }
         } else {
-            Set qualifiedLevels = AMAuthUtils.getRealmQualifiedAuthenticatedLevels(token);
+            Set qualifiedLevels = (token == null) ? null : AMAuthUtils.getRealmQualifiedAuthenticatedLevels(token);
             if (debug.messageEnabled()) {
-                debug.message(localDebugName + "qualifiedLeves from token= " +
-                        qualifiedLevels);
+                debug.message(localDebugName + "qualifiedLevels from token= " +
+                        ((qualifiedLevels == null) ? "NULL" : qualifiedLevels));
             }
             if ((qualifiedLevels != null) && (!qualifiedLevels.isEmpty())) {
                 Iterator iter = qualifiedLevels.iterator();
@@ -967,6 +968,29 @@ public class ResourceEnvIPCondition extends EntitlementConditionAdaptor {
         }
 
         parseConditions(resourceEnvIPConditionValue);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (!getClass().equals(obj.getClass())) {
+            return false;
+        }
+
+        ResourceEnvIPCondition other = (ResourceEnvIPCondition)obj;
+
+        return CollectionUtils.genericCompare(this.resourceEnvIPConditionValue, other.resourceEnvIPConditionValue);
+    }
+
+    @Override
+    public int hashCode() {
+        int hc = super.hashCode();
+        if (resourceEnvIPConditionValue != null) {
+            hc = 31*hc + resourceEnvIPConditionValue.hashCode();
+        }
+        return hc;
     }
 
     /**

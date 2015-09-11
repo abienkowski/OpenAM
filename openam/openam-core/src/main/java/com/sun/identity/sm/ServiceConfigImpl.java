@@ -24,10 +24,7 @@
  *
  * $Id: ServiceConfigImpl.java,v 1.15 2008/10/14 04:57:20 arviranga Exp $
  *
- */
-
-/*
- * Portions Copyrighted 2012-2014 ForgeRock AS
+ * Portions Copyrighted 2012-2015 ForgeRock AS.
  * Portions Copyrighted 2012 Open Source Solution Technology Corporation
  */
 
@@ -168,7 +165,7 @@ class ServiceConfigImpl implements ServiceListener {
     /**
      * Returns the names of all service's sub-configurations.
      */
-    Set getSubConfigNames(SSOToken t) throws SMSException, SSOException {
+    Set<String> getSubConfigNames(SSOToken t) throws SMSException, SSOException {
         if (subEntries == null) {
             subEntries = CachedSubEntries.getInstance(t, smsEntry.getDN());
         }
@@ -317,6 +314,11 @@ class ServiceConfigImpl implements ServiceListener {
      * Checks if the entry is still valid
      */
     boolean isValid() {
+        // check if ServiceSchemaImpl is stale
+        if (!ss.isValid()) {
+            return false;
+        }
+
         if (smsEntry.isValid() && smsEntry.isDirty()) {
             smsEntry.refresh();
         }
@@ -718,7 +720,8 @@ class ServiceConfigImpl implements ServiceListener {
             attributesWithoutDefaults.isEmpty()) &&
             ((serviceConfigNames == null) ||
                 serviceConfigNames.isEmpty()) &&
-            ((orgAttributes == null) || orgAttributes.isEmpty())
+            ((orgAttributes == null) || orgAttributes.isEmpty()) &&
+            ((nodeName == null) || !nodeName.equals(SMSUtils.SUB_CONFIG))
         ) {
             return "";
         }

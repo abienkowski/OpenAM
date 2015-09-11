@@ -14,7 +14,7 @@
  * Copyright 2006 Sun Microsystems Inc
  */
 /*
- * Portions Copyright 2010-2014 ForgeRock AS
+ * Portions Copyright 2010-2015 ForgeRock AS.
  */
 
 package org.forgerock.openam.entitlement.conditions.environment;
@@ -38,6 +38,7 @@ import com.sun.identity.entitlement.PrivilegeManager;
 import com.sun.identity.policy.PolicyException;
 import com.sun.identity.shared.debug.Debug;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.forgerock.openam.utils.CollectionUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -82,6 +83,10 @@ public class LDAPFilterCondition extends EntitlementConditionAdaptor {
     public ConditionDecision evaluate(String realm, Subject subject, String resourceName, Map<String, Set<String>> env)
             throws EntitlementException {
 
+        if (subject == null) {
+            return new ConditionDecision(false, Collections.<String, Set<String>>emptyMap());
+        }
+        
         SSOToken token = (SSOToken) getValue(subject.getPrivateCredentials());
         try {
             com.sun.identity.policy.ConditionDecision decision = condition.getConditionDecision(token, env);
@@ -145,5 +150,29 @@ public class LDAPFilterCondition extends EntitlementConditionAdaptor {
         } catch (PolicyException e) {
             throw new EntitlementException(EntitlementException.INVALID_VALUE, e.getLocalizedMessage());
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (!getClass().equals(obj.getClass())) {
+            return false;
+        }
+
+        LDAPFilterCondition other = (LDAPFilterCondition)obj;
+
+        return CollectionUtils.genericCompare(this.getLdapFilter(), other.getLdapFilter());
+    }
+
+    @Override
+    public int hashCode() {
+        int hc = super.hashCode();
+        String ldapFilter = getLdapFilter();
+        if (ldapFilter != null) {
+            hc = 31*hc + ldapFilter.hashCode();
+        }
+        return hc;
     }
 }

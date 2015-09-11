@@ -737,29 +737,6 @@ public class WindowsDesktopSSO extends AMLoginModule {
         return attr;
     }
 
-    /**
-     * Provides the "Alias Search Attribute Name" list from the Authentication
-     * Service for the realm. If these attributes are not configured it falls
-     * back to the User Naming Attribute for the realm
-     * @return a set containing the attribute names configured 
-     */
-    private Set<String> getUserAliasList() throws AuthLoginException {
-        Map orgSvc = getOrgServiceTemplate(
-                getRequestOrg(), ISAuthConstants.AUTH_SERVICE_NAME);
-        Set aliasAttrNames = (Set<String>) orgSvc.get(ISAuthConstants.AUTH_ALIAS_ATTR);
-        if (debug.messageEnabled()) {
-            debug.message("WindowsDesktopSSO.getUserAliasList: aliasAttrNames=" + aliasAttrNames);
-        }
-        if (aliasAttrNames.isEmpty()) { 
-            aliasAttrNames = (Set<String>)orgSvc.get(ISAuthConstants.AUTH_NAMING_ATTR);
-            if (debug.messageEnabled()) {
-                debug.message("WindowsDesktopSSO.getUserAliasList trying AUTH_NAMING_ATTR:" +
-                    aliasAttrNames);
-            }
-        }
-        return aliasAttrNames;
-    }
-
     private static Set<String> addToSet(Set<String> set, String attribute) {
         set.add(attribute);
         return set;

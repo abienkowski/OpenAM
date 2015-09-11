@@ -14,7 +14,7 @@
  * Copyright 2006 Sun Microsystems Inc.
  */
 /*
- * Portions Copyright 2014 ForgeRock AS.
+ * Portions Copyright 2014-2015 ForgeRock AS.
  */
 
 package org.forgerock.openam.entitlement.conditions.environment;
@@ -26,11 +26,15 @@ import com.sun.identity.entitlement.EntitlementConditionAdaptor;
 import com.sun.identity.entitlement.EntitlementException;
 import com.sun.identity.entitlement.PrivilegeManager;
 import com.sun.identity.shared.debug.Debug;
+
 import org.forgerock.openam.core.CoreWrapper;
+import org.forgerock.openam.utils.CollectionUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.security.auth.Subject;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -107,6 +111,10 @@ public class AuthLevelCondition extends EntitlementConditionAdaptor {
     public ConditionDecision evaluate(String realm, Subject subject, String resourceName, Map<String, Set<String>> env)
             throws EntitlementException {
 
+        if (subject == null) {
+            return new ConditionDecision(false, Collections.<String, Set<String>>emptyMap());
+        }
+        
         if (authLevel == null) {
             throw new EntitlementException(PROPERTY_VALUE_NOT_DEFINED, new String[]{AUTH_LEVEL}, null);
         }
@@ -309,5 +317,34 @@ public class AuthLevelCondition extends EntitlementConditionAdaptor {
         if (authLevel < 0) {
             throw new EntitlementException(INVALID_PROPERTY_VALUE, AUTH_LEVEL, authLevel);
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (!getClass().equals(obj.getClass())) {
+            return false;
+        }
+
+        AuthLevelCondition other = (AuthLevelCondition)obj;
+        if (!CollectionUtils.genericCompare(this.authRealm, other.authRealm)) {
+            return false;
+        }
+
+        return CollectionUtils.genericCompare(this.authLevel, other.authLevel);
+    }
+
+    @Override
+    public int hashCode() {
+        int hc = super.hashCode();
+        if (authRealm != null) {
+            hc = 31*hc + authRealm.hashCode();
+        }
+        if (authLevel != null) {
+            hc = 31*hc + authLevel.hashCode();
+        }
+        return hc;
     }
 }

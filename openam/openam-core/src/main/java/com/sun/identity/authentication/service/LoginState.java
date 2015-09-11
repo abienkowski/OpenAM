@@ -28,6 +28,9 @@
  */
 package com.sun.identity.authentication.service;
 
+import static java.util.Collections.unmodifiableSet;
+import static org.forgerock.openam.utils.CollectionUtils.asSet;
+
 import com.iplanet.am.sdk.AMException;
 import com.iplanet.am.sdk.AMObject;
 import com.iplanet.am.sdk.AMStoreConnection;
@@ -114,6 +117,14 @@ import org.forgerock.openam.utils.ClientUtils;
  * the OpenSSO system.
  */
 public class LoginState {
+
+    /* Define internal users
+     * For these users we would allow authentication only at root realm
+     * and require to be authenticated to configuration datastore.
+     */
+    public static final Set<String> INTERNAL_USERS = unmodifiableSet(asSet("amadmin", "dsameuser", "urlaccessagent"));
+
+    private static final boolean URL_REWRITE_IN_PATH = SystemProperties.getAsBoolean(Constants.REWRITE_AS_PATH);
     
     private static final boolean urlRewriteInPath =
         Boolean.valueOf(SystemProperties.get(
@@ -1468,13 +1479,13 @@ public class LoginState {
             } else {
                 debug.message("request: in putProperty stuff");
                 session.setClientID(userDN);
+                session.setType(Session.USER_SESSION);
                 session.setMaxSessionTime(maxSession);
                 session.setMaxIdleTime(idleTime);
                 session.setMaxCachingTime(cacheTime);
             }
             
             session.setClientDomain(getOrgDN());
-            session.setType(Session.USER_SESSION);
             if ((client = getClient()) != null) {
                 session.putProperty(ISAuthConstants.HOST, client);
             }

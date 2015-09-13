@@ -27,7 +27,7 @@
  */
 
 /*
- * Portions Copyrighted [2011] [ForgeRock AS]
+ * Portions Copyrighted 2011-2015 ForgeRock AS.
  */
 package com.sun.identity.idm;
 
@@ -39,11 +39,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.security.auth.callback.Callback;
 
-import com.sun.identity.shared.ldap.LDAPDN;
-import com.sun.identity.shared.ldap.util.DN;
+import org.forgerock.openam.ldap.LDAPUtils;
 
+import com.google.inject.assistedinject.Assisted;
 import com.iplanet.am.sdk.AMHashMap;
 import com.iplanet.sso.SSOException;
 import com.iplanet.sso.SSOToken;
@@ -78,9 +79,11 @@ public final class AMIdentityRepository {
     public static Debug debug = Debug.getInstance("amIdm");
     public static Map listeners = new CaseInsensitiveHashMap();
 
+    private static Set<IdRepoCreationListener> creationListeners = new HashSet<IdRepoCreationListener>();
+
     /**
      * @supported.api
-     * 
+     *
      * Constructor for the <code>AMIdentityRepository</code> object. If a null
      * is passed for the organization identifier <code>realmName</code>, then
      * the "root" realm is assumed.
@@ -89,16 +92,57 @@ public final class AMIdentityRepository {
      *            Single sign on token of the user
      * @param realmName
      *            Name of the realm (can be a Fully qualified DN)
-     * @throws IdRepoException
-     *             if there are repository related error conditions.
-     * @throws SSOException
-     *             if user's single sign on token is invalid.
+     * @throws IdRepoException Never thrown, required by legacy code.
+     * @throws SSOException Never thrown, required by legacy code.
+     * @deprecated in 13.0.0, use {@link #AMIdentityRepository(String, com.iplanet.sso.SSOToken)} instead
      */
+    @Deprecated
     public AMIdentityRepository(SSOToken ssotoken, String realmName)
             throws IdRepoException, SSOException {
-        token = ssotoken;
+        this(realmName, ssotoken);
+    }
+
+    /**
+     * @supported.api
+     *
+     * Constructor for the {@code AMIdentityRepository} object. If a {@code null} is passed for
+     * the organization identifier {@code realmName}, then the "root" realm is assumed.
+     *
+     * @param ssoToken Single sign on token of the user.
+     * @param realmName Name of the realm (can be a Fully qualified DN).
+     */
+    @Inject
+    public AMIdentityRepository(@Assisted String realmName, @Assisted SSOToken ssoToken) {
+        token = ssoToken;
         idRealmName = realmName;
         organizationDN = DNMapper.orgNameToDN(realmName);
+        notifyCreationListeners();
+    }
+
+    /**
+     * Adds a creation listener that will be notified each time a {@code AMIdentityRepository} is created .
+     *
+     * @param listener The listener.
+     */
+    public static void addCreationListener(IdRepoCreationListener listener) {
+        creationListeners.add(listener);
+    }
+
+    /**
+     * Removes a creation listener so that it will no longer be notified when a
+     * {@code AMIdentityRepository} is created.
+     *
+     * @param listener The listener.
+     * @return {@code true} if the listener was removed.
+     */
+    public static boolean removeCreationListener(IdRepoCreationListener listener) {
+        return creationListeners.remove(listener);
+    }
+
+    private void notifyCreationListeners() {
+        for (IdRepoCreationListener listener : creationListeners) {
+            listener.notify(this, idRealmName);
+        }
     }
 
     /**
@@ -139,7 +183,6 @@ public final class AMIdentityRepository {
             SSOException {
         IdServices idServices = IdServicesFactory.getDataStoreServices();
         return idServices.getSupportedOperations(token, type, organizationDN);
-
     }
 
     /**
@@ -331,7 +374,7 @@ public final class AMIdentityRepository {
     private AMIdentity getSubRealmIdentity(String subRealmName) throws
         IdRepoException, SSOException {
         String realmName = idRealmName;
-        if (DN.isDN(idRealmName)) {  // Wouldn't be a DN if it starts with "/"
+        if (LDAPUtils.isDN(idRealmName)) {  // Wouldn't be a DN if it starts with "/"
             realmName = DNMapper.orgNameToRealmName(idRealmName);
         }
 
@@ -488,7 +531,7 @@ public final class AMIdentityRepository {
         while (it.hasNext()) {
             AMIdentity id = (AMIdentity) it.next();
             IdServices idServices = IdServicesFactory.getDataStoreServices();
-            idServices.delete(token, id.getType(), id.getName(), organizationDN, 
+            idServices.delete(token, id.getType(), id.getName(), organizationDN,
                     id.getDN());
         }
     }
@@ -624,10 +667,8 @@ public final class AMIdentityRepository {
                 amsdkResults[0][0];
             Set results = amsdkRepoRes.getSearchResults();
             Map attrResults = amsdkRepoRes.getResultAttributes();
-            Iterator it = results.iterator();
-            while (it.hasNext()) {
-                String dn = (String) it.next();
-                String name = LDAPDN.explodeDN(dn, true)[0];
+            for (String dn : (Set<String>) results) {
+                String name = LDAPUtils.rdnValueFromDn(dn);
                 amsdkDNs.put(name, dn);
                 Set attrMaps = new HashSet();
                 attrMaps.add((Map) attrResults.get(dn));
@@ -638,10 +679,8 @@ public final class AMIdentityRepository {
         for (int i = 0; i < sizeOfArray; i++) {
             RepoSearchResults current = (RepoSearchResults) arrayOfResult[i][0];
             Map configMap = (Map) arrayOfResult[i][1];
-            Iterator it = current.getSearchResults().iterator();
             Map allAttrMaps = current.getResultAttributes();
-            while (it.hasNext()) {
-                String m = (String) it.next();
+            for (String m : (Set<String>) current.getSearchResults()) {
                 String mname = DNUtils.DNtoName(m);
                 Map attrMap = (Map) allAttrMaps.get(m);
                 attrMap = reverseMapAttributeNames(attrMap, configMap);
@@ -654,10 +693,8 @@ public final class AMIdentityRepository {
             }
         }
         IdSearchResults results = new IdSearchResults(type, orgName);
-        Iterator it = resultsMap.keySet().iterator();
-        while (it.hasNext()) {
-            String mname = (String) it.next();
-            Map combinedMap = combineAttrMaps((Set) resultsMap.get(mname), 
+        for (String mname : (Set<String>) resultsMap.keySet()) {
+            Map combinedMap = combineAttrMaps((Set) resultsMap.get(mname),
                     true);
             AMIdentity id = new AMIdentity(token, mname, type, orgName,
                     (String) amsdkDNs.get(mname));

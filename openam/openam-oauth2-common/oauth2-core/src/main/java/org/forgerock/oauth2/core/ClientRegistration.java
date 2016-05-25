@@ -124,4 +124,16 @@ public interface ClientRegistration {
      * @return The {@code SigningHandler}.
      */
     SigningHandler getClientJwtSigningHandler();
+    
+    /**
+     * Added based on commit d4422243ae9 for implied consent
+     * {@link https://stash.forgerock.org/projects/OPENAM/repos/openam/commits/d4422243ae9283c0c741e0a988fb48ae91be3b93}  
+     */
+    
+    /**
+     * Gets whether or not the client wants the OAuth2 implementation to skip asking the resource owner for consent.
+     *
+     * @return true if the client is configured to skip resource owner consent.
+     */
+    boolean isConsentImplied();
 }

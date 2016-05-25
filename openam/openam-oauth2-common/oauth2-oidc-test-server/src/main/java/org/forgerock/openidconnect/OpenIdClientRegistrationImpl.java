@@ -144,4 +144,14 @@ public class OpenIdClientRegistrationImpl implements OpenIdConnectClientRegistra
     public SigningHandler getClientJwtSigningHandler() {
         return new SigningManager().newHmacSigningHandler(SHARED_SECRET);
     }
+
+    /**
+     * Had to Add to make project compile for implied consent
+     * Note: this was removed from later versions of openam
+     * {@link https://stash.forgerock.org/projects/OPENAM/repos/openam/commits/d4422243ae9283c0c741e0a988fb48ae91be3b93}  
+     */
+	@Override
+	public boolean isConsentImplied() {
+		return false;
+	}
 }

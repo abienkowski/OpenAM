@@ -822,6 +822,40 @@ public class OpenAMOAuth2ProviderSettings extends OpenAMSettingsImpl implements 
         }
     }
 
+
+    /**
+     * Added based on commit d4422243ae9 for implied consent
+     * {@link https://stash.forgerock.org/projects/OPENAM/repos/openam/commits/d4422243ae9283c0c741e0a988fb48ae91be3b93}  
+     */
+    private String getStringSettingValue(String key) throws ServerException {
+        try {
+            return getStringSetting(realm, key);
+        } catch (Exception e) {
+        	//SSOException | SMSException e
+            logger.message("Could not get value of " + key, e);
+            throw new ServerException(e);
+        }
+    }
+    @Override
+    public boolean clientsCanSkipConsent() throws ServerException {
+        return Boolean.parseBoolean(getStringSettingValue(OAuth2ProviderService.CLIENTS_CAN_SKIP_CONSENT));
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isSaveConsentEnabled() {
+        try {
+            return getStringSetting(realm, OAuth2ProviderService.SAVED_CONSENT_ATTRIBUTE)!= null;
+        } catch (Exception e) {
+        	//SMSException | SSOException
+            logger.error("There was a problem getting the consent configuration for realm:" + realm, e);
+        }
+        return false;
+    }
+
+    
+    
     /**
      * ServiceListener implementation to clear cache when it changes.
      */

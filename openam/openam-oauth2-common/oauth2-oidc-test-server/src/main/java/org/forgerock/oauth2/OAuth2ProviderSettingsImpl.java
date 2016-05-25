@@ -283,4 +283,18 @@ public class OAuth2ProviderSettingsImpl implements OAuth2ProviderSettings {
         return Collections.emptyMap();
     }
 
+    /**
+     * Had to Add to make project compile for implied consent
+     * {@link https://stash.forgerock.org/projects/OPENAM/repos/openam/commits/d4422243ae9283c0c741e0a988fb48ae91be3b93}  
+     */
+	@Override
+	public boolean isSaveConsentEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean clientsCanSkipConsent() throws ServerException {
+		return true;
+	}
+
 }

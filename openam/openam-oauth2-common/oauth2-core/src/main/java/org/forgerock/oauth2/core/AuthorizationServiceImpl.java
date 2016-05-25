@@ -107,32 +107,47 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         // is resource owner authenticated?
         final ResourceOwner resourceOwner = resourceOwnerSessionValidator.validate(request);
 
-        final boolean consentSaved = providerSettings.isConsentSaved(resourceOwner,
-                clientRegistration.getClientId(), validatedScope);
+        final boolean requireConsent = !providerSettings.clientsCanSkipConsent()
+                || !clientRegistration.isConsentImplied();
 
-        //plugin point
-        final boolean haveConsent = consentVerifier.verify(consentSaved, request);
-
-        if (!haveConsent) {
-            String localeParameter = request.getParameter(LOCALE);
-            Locale locale = null;
-            if (localeParameter == null || localeParameter.isEmpty()) {
-                locale = request.getLocale();
-            } else {
-                String[] localeComponents = localeParameter.split("-");
-                if (localeComponents.length == 1) {
-                    locale = new Locale(localeComponents[0]);
-                } else if (localeComponents.length == 2) {
-                    locale = new Locale(localeComponents[0], localeComponents[1]);
-                } else if (localeComponents.length > 2) {
-                    locale = new Locale(localeComponents[0], localeComponents[1], localeComponents[2]);
+        if (requireConsent) {        
+	        final boolean consentSaved = providerSettings.isConsentSaved(resourceOwner,
+	                clientRegistration.getClientId(), validatedScope);
+	
+	        //plugin point
+	        final boolean haveConsent = consentVerifier.verify(consentSaved, request);
+	
+	        if (!haveConsent) {
+	            String localeParameter = request.getParameter(LOCALE);
+	            Locale locale = null;
+	            if (localeParameter == null || localeParameter.isEmpty()) {
+	                locale = request.getLocale();
+	            } else {
+	                String[] localeComponents = localeParameter.split("-");
+	                if (localeComponents.length == 1) {
+	                    locale = new Locale(localeComponents[0]);
+	                } else if (localeComponents.length == 2) {
+	                    locale = new Locale(localeComponents[0], localeComponents[1]);
+	                } else if (localeComponents.length > 2) {
+	                    locale = new Locale(localeComponents[0], localeComponents[1], localeComponents[2]);
+	                }
+	            }
+	            String clientName = clientRegistration.getDisplayName(locale);
+	            if (clientName == null) {
+                    clientName = clientRegistration.getClientId();
+                    logger.warn("Client does not have a display name or client name set. using client ID {} for " +
+                            "display", clientName);
                 }
-            }
-            final String clientName = clientRegistration.getDisplayName(locale);
-            final String clientDescription = clientRegistration.getDisplayDescription(locale);
-            final Set<String> scopeDescriptions = getScopeDescriptions(validatedScope,
-                    clientRegistration.getScopeDescriptions(locale));
-            throw new ResourceOwnerConsentRequired(clientName, clientDescription, scopeDescriptions);
+	            final String clientDescription = clientRegistration.getDisplayDescription(locale);
+	            final Set<String> scopeDescriptions = getScopeDescriptions(validatedScope,
+	                    clientRegistration.getScopeDescriptions(locale));
+	            
+//	            final Map<String, String> claimDescriptions = getClaimDescriptions(userInfo.getValues(),
+//                        clientRegistration.getClaimDescriptions(locale));
+//                final boolean saveConsentEnabled = providerSettings.isSaveConsentEnabled();
+
+	            throw new ResourceOwnerConsentRequired(clientName, clientDescription, scopeDescriptions);
+	        }
         }
 
         return tokenIssuer.issueTokens(request, clientRegistration, resourceOwner, scope, providerSettings);

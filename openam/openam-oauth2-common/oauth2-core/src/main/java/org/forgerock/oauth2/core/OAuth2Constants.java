@@ -800,6 +800,11 @@ public class OAuth2Constants {
         public static final String ACR_VALUE_MAPPING = "forgerock-oauth2-provider-loa-mapping";
         public static final String DEFAULT_ACR = "forgerock-oauth2-provider-default-acr";
         public static final String INVALID_SCOPE_BEHAVIOUR = "forgerock-oauth2-provider-invalid-scope-behaviour";
+        /**
+         * Added based on commit d4422243ae9 for implied consent
+         * {@link https://stash.forgerock.org/projects/OPENAM/repos/openam/commits/d4422243ae9283c0c741e0a988fb48ae91be3b93}  
+         */
+        public static final String CLIENTS_CAN_SKIP_CONSENT = "clientsCanSkipConsent";
     }
 
     /**
@@ -852,6 +857,11 @@ public class OAuth2Constants {
         public static final String CLIENT_SESSION_URI = "com.forgerock.openam.oauth2provider.clientSessionURI";
         public static final String CLIENT_NAME = "com.forgerock.openam.oauth2provider.clientName";
         public static final String CLIENT_JWT_PUBLIC_KEY = "com.forgerock.openam.oauth2provider.clientJwtPublicKey";
+        /**
+         * Added based on commit d4422243ae9 for implied consent
+         * {@link https://stash.forgerock.org/projects/OPENAM/repos/openam/commits/d4422243ae9283c0c741e0a988fb48ae91be3b93}  
+         */
+        public static final String IS_CONSENT_IMPLIED = "isConsentImplied";
     }
 
     public class JWTTokenParams {

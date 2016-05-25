@@ -551,6 +551,17 @@
                             <Value>createTimestamp</Value>
                         </DefaultValues>
                     </AttributeSchema>
+                    <!-- based on commit d4422243ae9 for implied consent https://stash.forgerock.org/projects/OPENAM/repos/openam/commits/d4422243ae9283c0c741e0a988fb48ae91be3b93 -->
+                    <AttributeSchema name="clientsCanSkipConsent" type="single" syntax="boolean" i18nKey="a122"
+                                 order="420">
+	                    <BooleanValues>
+	                        <BooleanTrueValue i18nKey="i18nTrue">true</BooleanTrueValue>
+	                        <BooleanFalseValue i18nKey="i18nFalse">false</BooleanFalseValue>
+	                    </BooleanValues>
+	                    <DefaultValues>
+	                        <Value>false</Value>
+	                    </DefaultValues>
+                	</AttributeSchema>
                 </SubSchema>
             </Organization>
         </Schema>

@@ -48,6 +48,13 @@ public interface OAuth2ProviderSettings {
     Map<String, ResponseTypeHandler> getAllowedResponseTypes() throws UnsupportedResponseTypeException, ServerException;
 
     /**
+     * Determines if the consent can be saved or not, due to a lack of configuration.
+     *
+     * @return {@code true} if the consent can be saved, false if it is not configured properly.
+     */
+    boolean isSaveConsentEnabled();
+    
+    /**
      * Determines whether a resource owner's consent has been saved from a previous authorize request.
      *
      * @param resourceOwner The resource owner.
@@ -363,5 +370,17 @@ public interface OAuth2ProviderSettings {
      * @return
      */
     Map<String, String> getAMRAuthModuleMappings() throws ServerException;
+    
+    /**
+     * Added based on commit d4422243ae9 for implied consent
+     * {@link https://stash.forgerock.org/projects/OPENAM/repos/openam/commits/d4422243ae9283c0c741e0a988fb48ae91be3b93}  
+     */
+    
+    /**
+     * Whether clients can opt to skip resource owner consent during authorization flows.
+     * @return <code>true</code> if clients are allowed to opt to skip resource owner consent.
+     * @throws ServerException If the setting could not be retrieved.
+     */
+    boolean clientsCanSkipConsent() throws ServerException;
 
 }
